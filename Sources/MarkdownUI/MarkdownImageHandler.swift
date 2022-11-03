@@ -1,7 +1,7 @@
 import Combine
+import Kingfisher
 //import NetworkImage
 import SwiftUI
-import Kingfisher
 
 /// A type that encapsulates the image loading behavior of a ``Markdown`` view for a given URL scheme.
 ///
@@ -33,29 +33,31 @@ extension MarkdownImageHandler {
   /// `Markdown` views use this image handler for the `http://` and `https://`
   /// schemes by default.
   public static let networkImage = MarkdownImageHandler { url in
-	  let subject = PassthroughSubject<NSTextAttachment, Never>()
+    let subject = PassthroughSubject<NSTextAttachment, Never>()
 
-	  KingfisherManager.shared.retrieveImage(with: url, completionHandler: { result in
-		  switch result {
-		  case .success(let value):
-			  let attachment = ResizableImageAttachment()
-			  attachment.image = value.image
-			  subject.send(attachment)
-		  case .failure(let error):
-			  subject.send(NSTextAttachment())
-		  }
-	  })
-	  
-	  return subject.eraseToAnyPublisher()
-	  
-//    NetworkImageLoader.shared.image(for: url)
-//      .map { image in
-//        let attachment = ResizableImageAttachment()
-//        attachment.image = image
-//        return attachment
-//      }
-//      .replaceError(with: NSTextAttachment())
-//      .eraseToAnyPublisher()
+    KingfisherManager.shared.retrieveImage(
+      with: url,
+      completionHandler: { result in
+        switch result {
+        case .success(let value):
+          let attachment = ResizableImageAttachment()
+          attachment.image = value.image
+          subject.send(attachment)
+        case .failure(let error):
+          subject.send(NSTextAttachment())
+        }
+      })
+
+    return subject.eraseToAnyPublisher()
+
+    //    NetworkImageLoader.shared.image(for: url)
+    //      .map { image in
+    //        let attachment = ResizableImageAttachment()
+    //        attachment.image = image
+    //        return attachment
+    //      }
+    //      .replaceError(with: NSTextAttachment())
+    //      .eraseToAnyPublisher()
   }
 
   /// A `MarkdownImageHandler` instance that loads images from resource files or asset catalogs.
@@ -70,14 +72,14 @@ extension MarkdownImageHandler {
   ) -> MarkdownImageHandler {
     MarkdownImageHandler { url in
       #if os(macOS)
-		let image: NSImage?
+        let image: NSImage?
         if let bundle = bundle, bundle != .main {
           image = bundle.image(forResource: name(url))
         } else {
           image = NSImage(named: name(url))
         }
       #elseif os(iOS) || os(tvOS)
-		let image : UIImage?
+        let image: UIImage?
         image = UIImage(named: name(url), in: bundle, compatibleWith: nil)
       #endif
       let attachment = image.map { image -> NSTextAttachment in
